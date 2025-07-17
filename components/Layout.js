@@ -1,24 +1,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { 
-  Home, 
-  Users, 
-  MapPin, 
-  ShoppingCart, 
-  Package, 
-  BarChart3, 
-  Menu, 
-  X,
-  LogOut,
-  User,
-  Sync,
-  FileText,
-  CreditCard,
-  RotateCcw,
-  ArrowLeftRight,
-  ClipboardList
-} from 'lucide-react'
+import { Home, Users, MapPin, ShoppingCart, Package, BarChart3, Menu, X, LogOut, User, FolderSync as Sync, FileText, CreditCard, RotateCcw, ArrowLeftRight, ClipboardList } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { syncService } from '../services/api'
 import toast from 'react-hot-toast'

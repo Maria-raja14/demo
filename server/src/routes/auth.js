@@ -1,7 +1,7 @@
-import express from 'express';
-import jwt from 'jsonwebtoken';
-import User from '../models/User';
-import { authenticate } from '../middleware/auth';
+const express = require('express');
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
+const { authenticate } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -34,7 +34,8 @@ router.post('/login', async (req, res) => {
         role: user.role,
         companyId: user.companyId,
         divisionId: user.divisionId,
-        vanId: user.vanId
+        vanId: user.vanId,
+        permissions: user.permissions
       }
     });
   } catch (error) {
@@ -43,7 +44,7 @@ router.post('/login', async (req, res) => {
 });
 
 // Get current user
-router.get('/me', authenticate, async (req: any, res) => {
+router.get('/me', authenticate, async (req, res) => {
   res.json({
     user: {
       id: req.user._id,
@@ -53,13 +54,14 @@ router.get('/me', authenticate, async (req: any, res) => {
       companyId: req.user.companyId,
       divisionId: req.user.divisionId,
       vanId: req.user.vanId,
-      lastSync: req.user.lastSync
+      lastSync: req.user.lastSync,
+      permissions: req.user.permissions
     }
   });
 });
 
 // Change password
-router.post('/change-password', authenticate, async (req: any, res) => {
+router.post('/change-password', authenticate, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
 
@@ -77,4 +79,4 @@ router.post('/change-password', authenticate, async (req: any, res) => {
   }
 });
 
-export default router;
+module.exports = router;

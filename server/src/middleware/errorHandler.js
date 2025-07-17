@@ -1,15 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
-
-export const errorHandler = (
-  error: any,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const errorHandler = (error, req, res, next) => {
   console.error('Error:', error);
 
   if (error.name === 'ValidationError') {
-    const errors = Object.values(error.errors).map((err: any) => err.message);
+    const errors = Object.values(error.errors).map((err) => err.message);
     return res.status(400).json({
       message: 'Validation Error',
       errors
@@ -33,3 +26,5 @@ export const errorHandler = (
     message: error.message || 'Internal Server Error'
   });
 };
+
+module.exports = { errorHandler };

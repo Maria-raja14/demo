@@ -1,23 +1,28 @@
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import morgan from 'morgan';
-import dotenv from 'dotenv';
-import mongoose from 'mongoose';
-import cron from 'node-cron';
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const mongoose = require('mongoose');
+const cron = require('node-cron');
+require('dotenv').config();
 
-import authRoutes from './routes/auth';
-import masterDataRoutes from './routes/masterData';
-import visitRoutes from './routes/visits';
-import salesRoutes from './routes/sales';
-import inventoryRoutes from './routes/inventory';
-import reportsRoutes from './routes/reports';
-import syncRoutes from './routes/sync';
+// Import routes
+const authRoutes = require('./routes/auth');
+const masterDataRoutes = require('./routes/masterData');
+const visitRoutes = require('./routes/visits');
+const salesRoutes = require('./routes/sales');
+const inventoryRoutes = require('./routes/inventory');
+const invoiceRoutes = require('./routes/invoices');
+const paymentRoutes = require('./routes/payments');
+const returnRoutes = require('./routes/returns');
+const transferRoutes = require('./routes/transfers');
+const reportsRoutes = require('./routes/reports');
+const syncRoutes = require('./routes/sync');
+const surveyRoutes = require('./routes/surveys');
 
-import { errorHandler } from './middleware/errorHandler';
-import { SyncService } from './services/sync/SyncService';
-
-dotenv.config();
+// Import middleware
+const { errorHandler } = require('./middleware/errorHandler');
+const { SyncService } = require('./services/sync/SyncService');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -40,8 +45,13 @@ app.use('/api/master-data', masterDataRoutes);
 app.use('/api/visits', visitRoutes);
 app.use('/api/sales', salesRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use('/api/invoices', invoiceRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/returns', returnRoutes);
+app.use('/api/transfers', transferRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/sync', syncRoutes);
+app.use('/api/surveys', surveyRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

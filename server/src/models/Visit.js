@@ -1,31 +1,6 @@
-import mongoose, { Schema, Document } from 'mongoose';
+const mongoose = require('mongoose');
 
-export interface IVisit extends Document {
-  customerId: string;
-  salespersonId: string;
-  vanId: string;
-  plannedDate: Date;
-  actualDate?: Date;
-  status: 'planned' | 'completed' | 'missed' | 'cancelled';
-  checkInTime?: Date;
-  checkOutTime?: Date;
-  checkInLocation?: {
-    latitude: number;
-    longitude: number;
-  };
-  checkOutLocation?: {
-    latitude: number;
-    longitude: number;
-  };
-  notes?: string;
-  ordersCreated: string[];
-  invoicesCreated: string[];
-  paymentsCollected: string[];
-  companyId: string;
-  divisionId: string;
-}
-
-const VisitSchema = new Schema<IVisit>({
+const VisitSchema = new mongoose.Schema({
   customerId: { type: String, required: true },
   salespersonId: { type: String, required: true },
   vanId: { type: String, required: true },
@@ -33,7 +8,7 @@ const VisitSchema = new Schema<IVisit>({
   actualDate: { type: Date },
   status: { 
     type: String, 
-    enum: ['planned', 'completed', 'missed', 'cancelled'],
+    enum: ['planned', 'completed', 'missed', 'cancelled', 'unplanned'],
     default: 'planned'
   },
   checkInTime: { type: Date },
@@ -51,12 +26,26 @@ const VisitSchema = new Schema<IVisit>({
   invoicesCreated: [{ type: String }],
   paymentsCollected: [{ type: String }],
   companyId: { type: String, required: true },
-  divisionId: { type: String, required: true }
+  divisionId: { type: String, required: true },
+  visitType: {
+    type: String,
+    enum: ['scheduled', 'unplanned', 'follow_up'],
+    default: 'scheduled'
+  },
+  duration: { type: Number }, // in minutes
+  objectives: [{ type: String }],
+  outcomes: [{ type: String }],
+  nextVisitDate: { type: Date },
+  customerFeedback: {
+    satisfaction: { type: Number, min: 1, max: 5 },
+    comments: { type: String }
+  }
 }, {
   timestamps: true
 });
 
 VisitSchema.index({ salespersonId: 1, plannedDate: 1 });
 VisitSchema.index({ customerId: 1 });
+VisitSchema.index({ companyId: 1, divisionId: 1 });
 
-export default mongoose.model<IVisit>('Visit', VisitSchema);
+module.exports = mongoose.model('Visit', VisitSchema);

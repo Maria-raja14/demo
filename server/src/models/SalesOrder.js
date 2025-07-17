@@ -1,39 +1,6 @@
-import mongoose, { Schema, Document } from 'mongoose';
+const mongoose = require('mongoose');
 
-export interface ISalesOrderLine {
-  itemId: string;
-  quantity: number;
-  unitPrice: number;
-  discountPercent: number;
-  discountAmount: number;
-  vatRate: number;
-  exciseRate: number;
-  lineAmount: number;
-}
-
-export interface ISalesOrder extends Document {
-  bcOrderId?: string;
-  orderNumber: string;
-  customerId: string;
-  salespersonId: string;
-  vanId: string;
-  orderDate: Date;
-  deliveryDate: Date;
-  status: 'draft' | 'approved' | 'cancelled' | 'picked' | 'invoiced' | 'delivered';
-  lines: ISalesOrderLine[];
-  subtotal: number;
-  vatAmount: number;
-  exciseAmount: number;
-  discountAmount: number;
-  totalAmount: number;
-  paymentMethod: 'cash' | 'credit' | 'cheque';
-  notes?: string;
-  companyId: string;
-  divisionId: string;
-  syncStatus: 'pending' | 'synced' | 'failed';
-}
-
-const SalesOrderLineSchema = new Schema<ISalesOrderLine>({
+const SalesOrderLineSchema = new mongoose.Schema({
   itemId: { type: String, required: true },
   quantity: { type: Number, required: true },
   unitPrice: { type: Number, required: true },
@@ -41,10 +8,15 @@ const SalesOrderLineSchema = new Schema<ISalesOrderLine>({
   discountAmount: { type: Number, default: 0 },
   vatRate: { type: Number, default: 0 },
   exciseRate: { type: Number, default: 0 },
-  lineAmount: { type: Number, required: true }
+  lineAmount: { type: Number, required: true },
+  promotionApplied: {
+    type: { type: String },
+    description: { type: String },
+    freeQuantity: { type: Number, default: 0 }
+  }
 });
 
-const SalesOrderSchema = new Schema<ISalesOrder>({
+const SalesOrderSchema = new mongoose.Schema({
   bcOrderId: { type: String },
   orderNumber: { type: String, required: true, unique: true },
   customerId: { type: String, required: true },
@@ -75,7 +47,11 @@ const SalesOrderSchema = new Schema<ISalesOrder>({
     type: String, 
     enum: ['pending', 'synced', 'failed'],
     default: 'pending'
-  }
+  },
+  visitId: { type: String },
+  deliveryAddress: { type: String },
+  approvedBy: { type: String },
+  approvedAt: { type: Date }
 }, {
   timestamps: true
 });
@@ -83,5 +59,6 @@ const SalesOrderSchema = new Schema<ISalesOrder>({
 SalesOrderSchema.index({ companyId: 1, divisionId: 1 });
 SalesOrderSchema.index({ salespersonId: 1 });
 SalesOrderSchema.index({ customerId: 1 });
+SalesOrderSchema.index({ status: 1 });
 
-export default mongoose.model<ISalesOrder>('SalesOrder', SalesOrderSchema);
+module.exports = mongoose.model('SalesOrder', SalesOrderSchema);

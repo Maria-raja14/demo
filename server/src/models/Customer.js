@@ -1,30 +1,6 @@
-import mongoose, { Schema, Document } from 'mongoose';
+const mongoose = require('mongoose');
 
-export interface ICustomer extends Document {
-  bcCustomerId: string;
-  code: string;
-  name: string;
-  address: string;
-  city: string;
-  region: string;
-  phone: string;
-  email: string;
-  creditLimit: number;
-  currentBalance: number;
-  isBlocked: boolean;
-  paymentTerms: string;
-  priceGroupCode: string;
-  vatRegistrationNo: string;
-  companyId: string;
-  divisionId: string;
-  location: {
-    latitude: number;
-    longitude: number;
-  };
-  lastVisit?: Date;
-}
-
-const CustomerSchema = new Schema<ICustomer>({
+const CustomerSchema = new mongoose.Schema({
   bcCustomerId: { type: String, required: true, unique: true },
   code: { type: String, required: true },
   name: { type: String, required: true },
@@ -45,12 +21,22 @@ const CustomerSchema = new Schema<ICustomer>({
     latitude: { type: Number, required: true },
     longitude: { type: Number, required: true }
   },
-  lastVisit: { type: Date }
+  lastVisit: { type: Date },
+  visitFrequency: {
+    type: String,
+    enum: ['daily', 'weekly', 'biweekly', 'monthly'],
+    default: 'weekly'
+  },
+  preferredVisitDay: { type: String },
+  route: { type: String },
+  territory: { type: String },
+  salesPersonId: { type: String }
 }, {
   timestamps: true
 });
 
 CustomerSchema.index({ companyId: 1, divisionId: 1 });
 CustomerSchema.index({ location: '2dsphere' });
+CustomerSchema.index({ route: 1 });
 
-export default mongoose.model<ICustomer>('Customer', CustomerSchema);
+module.exports = mongoose.model('Customer', CustomerSchema);

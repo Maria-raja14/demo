@@ -1,12 +1,11 @@
-import axios, { AxiosInstance } from 'axios';
-import { D365Config } from '../../types';
+const axios = require('axios');
 
-export class D365Service {
-  private axiosInstance: AxiosInstance;
-  private accessToken: string | null = null;
-  private tokenExpiry: Date | null = null;
-
-  constructor(private config: D365Config) {
+class D365Service {
+  constructor(config) {
+    this.config = config;
+    this.accessToken = null;
+    this.tokenExpiry = null;
+    
     this.axiosInstance = axios.create({
       baseURL: config.baseUrl,
       timeout: 30000,
@@ -19,7 +18,7 @@ export class D365Service {
     });
   }
 
-  private async getAccessToken(): Promise<string> {
+  async getAccessToken() {
     if (this.accessToken && this.tokenExpiry && new Date() < this.tokenExpiry) {
       return this.accessToken;
     }
@@ -41,7 +40,7 @@ export class D365Service {
       );
 
       this.accessToken = response.data.access_token;
-      this.tokenExpiry = new Date(Date.now() + (response.data.expires_in * 1000) - 60000); // 1 minute buffer
+      this.tokenExpiry = new Date(Date.now() + (response.data.expires_in * 1000) - 60000);
 
       return this.accessToken;
     } catch (error) {
@@ -51,7 +50,7 @@ export class D365Service {
   }
 
   // Customer operations
-  async getCustomers(companyId: string): Promise<any[]> {
+  async getCustomers(companyId) {
     try {
       const response = await this.axiosInstance.get(`/${companyId}/customers`);
       return response.data.value || [];
@@ -61,7 +60,7 @@ export class D365Service {
     }
   }
 
-  async getCustomer(companyId: string, customerId: string): Promise<any> {
+  async getCustomer(companyId, customerId) {
     try {
       const response = await this.axiosInstance.get(`/${companyId}/customers(${customerId})`);
       return response.data;
@@ -72,7 +71,7 @@ export class D365Service {
   }
 
   // Item operations
-  async getItems(companyId: string): Promise<any[]> {
+  async getItems(companyId) {
     try {
       const response = await this.axiosInstance.get(`/${companyId}/items`);
       return response.data.value || [];
@@ -83,7 +82,7 @@ export class D365Service {
   }
 
   // Sales Order operations
-  async createSalesOrder(companyId: string, orderData: any): Promise<any> {
+  async createSalesOrder(companyId, orderData) {
     try {
       const response = await this.axiosInstance.post(`/${companyId}/salesOrders`, orderData);
       return response.data;
@@ -93,7 +92,7 @@ export class D365Service {
     }
   }
 
-  async updateSalesOrder(companyId: string, orderId: string, orderData: any): Promise<any> {
+  async updateSalesOrder(companyId, orderId, orderData) {
     try {
       const response = await this.axiosInstance.patch(`/${companyId}/salesOrders(${orderId})`, orderData);
       return response.data;
@@ -104,7 +103,7 @@ export class D365Service {
   }
 
   // Invoice operations
-  async createSalesInvoice(companyId: string, invoiceData: any): Promise<any> {
+  async createSalesInvoice(companyId, invoiceData) {
     try {
       const response = await this.axiosInstance.post(`/${companyId}/salesInvoices`, invoiceData);
       return response.data;
@@ -115,7 +114,7 @@ export class D365Service {
   }
 
   // Payment operations
-  async createPayment(companyId: string, paymentData: any): Promise<any> {
+  async createPayment(companyId, paymentData) {
     try {
       const response = await this.axiosInstance.post(`/${companyId}/customerPayments`, paymentData);
       return response.data;
@@ -125,8 +124,8 @@ export class D365Service {
     }
   }
 
-  // Customer Ledger Entries (for aging analysis)
-  async getCustomerLedgerEntries(companyId: string, customerId: string): Promise<any[]> {
+  // Customer Ledger Entries
+  async getCustomerLedgerEntries(companyId, customerId) {
     try {
       const response = await this.axiosInstance.get(
         `/${companyId}/customerLedgerEntries?$filter=customerNo eq '${customerId}'`
@@ -139,7 +138,7 @@ export class D365Service {
   }
 
   // Price List operations
-  async getPriceLists(companyId: string): Promise<any[]> {
+  async getPriceLists(companyId) {
     try {
       const response = await this.axiosInstance.get(`/${companyId}/salesPrices`);
       return response.data.value || [];
@@ -149,20 +148,20 @@ export class D365Service {
     }
   }
 
-  // Discount operations
-  async getDiscounts(companyId: string): Promise<any[]> {
+  // Sales Return operations
+  async createSalesReturn(companyId, returnData) {
     try {
-      const response = await this.axiosInstance.get(`/${companyId}/salesLineDiscounts`);
-      return response.data.value || [];
+      const response = await this.axiosInstance.post(`/${companyId}/salesCreditMemos`, returnData);
+      return response.data;
     } catch (error) {
-      console.error('Failed to fetch discounts from D365:', error);
+      console.error('Failed to create sales return in D365:', error);
       throw error;
     }
   }
 }
 
 // Singleton instance
-const d365Config: D365Config = {
+const d365Config = {
   baseUrl: process.env.D365_BASE_URL || '',
   clientId: process.env.D365_CLIENT_ID || '',
   clientSecret: process.env.D365_CLIENT_SECRET || '',
@@ -170,4 +169,6 @@ const d365Config: D365Config = {
   scope: process.env.D365_SCOPE || 'https://api.businesscentral.dynamics.com/.default',
 };
 
-export const d365Service = new D365Service(d365Config);
+const d365Service = new D365Service(d365Config);
+
+module.exports = { D365Service, d365Service };

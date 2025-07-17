@@ -1,16 +1,6 @@
-import mongoose, { Schema, Document } from 'mongoose';
+const mongoose = require('mongoose');
 
-export interface ISyncLog extends Document {
-  entityType: string;
-  operation: 'create' | 'update' | 'delete';
-  entityId: string;
-  status: 'pending' | 'success' | 'failed';
-  errorMessage?: string;
-  attempts: number;
-  lastAttempt: Date;
-}
-
-const SyncLogSchema = new Schema<ISyncLog>({
+const SyncLogSchema = new mongoose.Schema({
   entityType: { type: String, required: true },
   operation: { 
     type: String, 
@@ -33,4 +23,4 @@ const SyncLogSchema = new Schema<ISyncLog>({
 SyncLogSchema.index({ entityType: 1, entityId: 1 });
 SyncLogSchema.index({ status: 1 });
 
-export default mongoose.model<ISyncLog>('SyncLog', SyncLogSchema);
+module.exports = mongoose.model('SyncLog', SyncLogSchema);

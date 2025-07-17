@@ -1,12 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import User from '../models/User';
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
-export interface AuthRequest extends Request {
-  user?: any;
-}
-
-export const authenticate = async (req: AuthRequest, res: Response, next: NextFunction) => {
+const authenticate = async (req, res, next) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
     
@@ -14,7 +9,7 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
       return res.status(401).json({ message: 'Access denied. No token provided.' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret') as any;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
     const user = await User.findById(decoded.userId).select('-password');
     
     if (!user || !user.isActive) {
@@ -28,11 +23,13 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
   }
 };
 
-export const authorize = (roles: string[]) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
+const authorize = (roles) => {
+  return (req, res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({ message: 'Access denied. Insufficient permissions.' });
     }
     next();
   };
 };
+
+module.exports = { authenticate, authorize };

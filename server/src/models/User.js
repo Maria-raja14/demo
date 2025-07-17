@@ -1,20 +1,7 @@
-import mongoose, { Schema, Document } from 'mongoose';
-import bcrypt from 'bcryptjs';
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
-export interface IUser extends Document {
-  username: string;
-  email: string;
-  password: string;
-  role: 'salesperson' | 'manager' | 'admin';
-  companyId: string;
-  divisionId: string;
-  vanId?: string;
-  isActive: boolean;
-  lastSync?: Date;
-  comparePassword(candidatePassword: string): Promise<boolean>;
-}
-
-const UserSchema = new Schema<IUser>({
+const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
@@ -27,7 +14,14 @@ const UserSchema = new Schema<IUser>({
   divisionId: { type: String, required: true },
   vanId: { type: String },
   isActive: { type: Boolean, default: true },
-  lastSync: { type: Date }
+  lastSync: { type: Date },
+  permissions: {
+    canCreateOrders: { type: Boolean, default: true },
+    canProcessPayments: { type: Boolean, default: true },
+    canManageInventory: { type: Boolean, default: true },
+    canViewReports: { type: Boolean, default: true },
+    canManageVisits: { type: Boolean, default: true }
+  }
 }, {
   timestamps: true
 });
@@ -40,8 +34,8 @@ UserSchema.pre('save', async function(next) {
   next();
 });
 
-UserSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
+UserSchema.methods.comparePassword = async function(candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-export default mongoose.model<IUser>('User', UserSchema);
+module.exports = mongoose.model('User', UserSchema);

@@ -3,6 +3,9 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   srcDir: true,
+  experimental: {
+    externalDir: true,
+  },
   images: {
     domains: ['images.pexels.com'],
   },
